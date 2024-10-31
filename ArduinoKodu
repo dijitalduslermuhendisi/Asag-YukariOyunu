@@ -1,0 +1,149 @@
+const int segA = 2;
+const int segB = 3;
+const int segC = 4;
+const int segD = 5;
+const int segE = 6;
+const int segF = 7;
+const int segG = 8;
+
+const int butonYukari = 9;
+const int butonAsagi = 10;
+
+const int buzzer = 11;
+
+int sayi;
+int hedef;
+bool oyunKazandi = false;
+
+int rakamlar[10][7] = {
+  {0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 1, 1, 1, 1},
+  {0, 0, 1, 0, 0, 1, 0},
+  {0, 0, 0, 0, 1, 1, 0},
+  {1, 0, 0, 1, 1, 0, 0},
+  {0, 1, 0, 0, 1, 0, 0},
+  {0, 1, 0, 0, 0, 0, 0},
+  {0, 0, 0, 1, 1, 1, 1},
+  {0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 1, 0, 0}
+};
+
+void setup() {
+  pinMode(segA, OUTPUT);
+  pinMode(segB, OUTPUT);
+  pinMode(segC, OUTPUT);
+  pinMode(segD, OUTPUT);
+  pinMode(segE, OUTPUT);
+  pinMode(segF, OUTPUT);
+  pinMode(segG, OUTPUT);
+  
+  pinMode(butonYukari, INPUT_PULLUP);
+  pinMode(butonAsagi, INPUT_PULLUP);
+
+  pinMode(buzzer, OUTPUT);
+  
+  randomSeed(analogRead(0));
+  
+  hedef = random(0, 10);
+  sayi = random(0, 10);
+  
+  baslangicBuzzerAnimasyonu();
+  
+  rakamGoster(sayi);
+}
+
+void loop() {
+  if (oyunKazandi) {
+    kazanmaAnimasyonuVeKutlama();
+    
+    delay(1000);
+
+    baslangicBuzzerAnimasyonu();
+    
+    hedef = random(0, 10);
+    sayi = random(0, 10);
+    oyunKazandi = false;
+    rakamGoster(sayi);
+  }
+  
+  if (digitalRead(butonYukari) == LOW) {
+    sayi++;
+    if (sayi > 9) {
+      sayi = 0;
+    }
+    rakamGoster(sayi);
+    butonBuzzer();
+    delay(300);
+  }
+  
+  if (digitalRead(butonAsagi) == LOW) {
+    sayi--;
+    if (sayi < 0) {
+      sayi = 9;
+    }
+    rakamGoster(sayi);
+    butonBuzzer();
+    delay(300);
+  }
+  
+  if (sayi == hedef) {
+    oyunKazandi = true;
+  }
+}
+
+void rakamGoster(int num) {
+  digitalWrite(segA, rakamlar[num][0]);
+  digitalWrite(segB, rakamlar[num][1]);
+  digitalWrite(segC, rakamlar[num][2]);
+  digitalWrite(segD, rakamlar[num][3]);
+  digitalWrite(segE, rakamlar[num][4]);
+  digitalWrite(segF, rakamlar[num][5]);
+  digitalWrite(segG, rakamlar[num][6]);
+}
+
+void ekranTemizle() {
+  digitalWrite(segA, LOW);
+  digitalWrite(segB, LOW);
+  digitalWrite(segC, LOW);
+  digitalWrite(segD, LOW);
+  digitalWrite(segE, LOW);
+  digitalWrite(segF, LOW);
+  digitalWrite(segG, LOW);
+}
+
+void butonBuzzer() {
+  tone(buzzer, 1000);
+  delay(100);
+  noTone(buzzer);
+}
+
+void baslangicBuzzerAnimasyonu() {
+  for (int i = 500; i <= 1000; i += 100) {
+    tone(buzzer, i);
+    delay(100);
+  }
+  noTone(buzzer);
+}
+
+void kazanmaAnimasyonuVeKutlama() {
+  int melodi[] = {262, 294, 330, 349, 392, 440, 494, 523};
+  int notaSureleri[] = {200, 200, 200, 200, 200, 200, 200, 400};
+
+  for (int i = 0; i < 8; i++) {
+    for (int num = 0; num <= 9; num++) {
+      rakamGoster(num);
+      delay(notaSureleri[i] / 10);
+    }
+    
+    tone(buzzer, melodi[i]);
+    delay(notaSureleri[i]);
+    noTone(buzzer);
+  }
+  
+  for (int i = 0; i < 3; i++) {
+    ekranTemizle();
+    delay(250);
+    rakamGoster(sayi);
+    delay(250);
+  }
+}
